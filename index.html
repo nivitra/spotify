@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Algorithm — Interactive Deconstruction</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- ═══ TOP BAR ═══ -->
+        <header class="topbar">
+            <div class="topbar-logo">SPOTIFY ENGINE <span>// DECONSTRUCTION</span></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="step-indicator" id="step-indicator">STEP 1 / 10</div>
+        </header>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <main class="main-content" id="main-content">
+
+            <!-- ════════════════════════════════════════ STEP 1: THE PROBLEM ════════════════════════════════════════ -->
+            <div class="step-container active" data-step="1">
+                <div class="step-header">
+                    <span class="step-tag">Step 01 — The Problem</span>
+                    <h1 class="step-title">100M songs. 600M users.<br>Find the right one. Now.</h1>
+                    <p class="step-desc">Spotify's core engineering problem: given a user's history and the world's
+                        music, find the right song for <em>this moment</em> — in under 200 milliseconds.</p>
+                </div>
+
+                <div class="metric-row">
+                    <div class="metric-box">
+                        <div class="metric-val">100M</div>
+                        <div class="metric-name">Songs</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-val">600M</div>
+                        <div class="metric-name">Users</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-val">60Q</div>
+                        <div class="metric-name">Matrix Cells</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-val amber">&lt;200ms</div>
+                        <div class="metric-name">Latency Budget</div>
+                    </div>
+                </div>
+
+                <div class="callout info">
+                    <strong>The impossibility:</strong> A 600M × 100M matrix has 60 quadrillion cells. You can't store
+                    it. You can't search it. The entire field of recommendation systems is about making this tractable.
+                    This demo walks you through exactly how — step by step.
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">Three Pillars — Click to Preview</div>
+                    <div class="three-col">
+                        <div class="panel" style="cursor:pointer;text-align:center" onclick="goToStep(3)">
+                            <div style="font-size:28px;margin-bottom:8px;">👥</div>
+                            <div style="font-family:var(--mono);font-size:13px;color:var(--green);">Collaborative
+                                Filtering</div>
+                            <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">"People like you liked
+                                this"</div>
+                        </div>
+                        <div class="panel" style="cursor:pointer;text-align:center" onclick="goToStep(5)">
+                            <div style="font-size:28px;margin-bottom:8px;">🔊</div>
+                            <div style="font-family:var(--mono);font-size:13px;color:var(--green);">Audio Analysis</div>
+                            <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">"This sounds like what you
+                                love"</div>
+                        </div>
+                        <div class="panel" style="cursor:pointer;text-align:center" onclick="goToStep(6)">
+                            <div style="font-size:28px;margin-bottom:8px;">📡</div>
+                            <div style="font-family:var(--mono);font-size:13px;color:var(--green);">NLP Analysis</div>
+                            <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">"The internet says this
+                                fits"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 2: USER-ITEM MATRIX ════════════════════════════════════════ -->
+            <div class="step-container" data-step="2">
+                <div class="step-header">
+                    <span class="step-tag">Step 02 — The Data</span>
+                    <h1 class="step-title">The User-Item Matrix</h1>
+                    <p class="step-desc">Every interaction is captured. Click any empty cell to simulate a user
+                        listening to a song — watch how the interaction score changes.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>Implicit feedback:</strong> Spotify doesn't ask you to rate songs. It watches what you
+                    <em>do</em>. Full plays, replays, saves = positive signal. Skips before 30s = strong negative. Each
+                    cell is a confidence-weighted score, not a simple 0/1.
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">Interactive Matrix — Click cells to add/change interactions</div>
+                    <div class="matrix-wrapper">
+                        <table class="i-matrix" id="userItemMatrix"></table>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-label">Signal Weights</div>
+                        <div class="feature-bar"><span class="feature-label">Full Play</span>
+                            <div class="feature-track">
+                                <div class="feature-fill green" style="width:70%"></div>
+                            </div><span class="feature-val">+3.5</span>
+                        </div>
+                        <div class="feature-bar"><span class="feature-label">Replay</span>
+                            <div class="feature-track">
+                                <div class="feature-fill green" style="width:90%"></div>
+                            </div><span class="feature-val">+4.5</span>
+                        </div>
+                        <div class="feature-bar"><span class="feature-label">Save</span>
+                            <div class="feature-track">
+                                <div class="feature-fill green" style="width:95%"></div>
+                            </div><span class="feature-val">+5.0</span>
+                        </div>
+                        <div class="feature-bar"><span class="feature-label">Skip &lt;30s</span>
+                            <div class="feature-track">
+                                <div class="feature-fill red" style="width:80%"></div>
+                            </div><span class="feature-val">-4.0</span>
+                        </div>
+                        <div class="feature-bar"><span class="feature-label">Skip &gt;30s</span>
+                            <div class="feature-track">
+                                <div class="feature-fill amber" style="width:30%"></div>
+                            </div><span class="feature-val">-1.5</span>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-label">Matrix Stats</div>
+                        <div class="metric-row">
+                            <div class="metric-box">
+                                <div class="metric-val" id="mat-filled">0</div>
+                                <div class="metric-name">Filled Cells</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-val" id="mat-sparsity">99%</div>
+                                <div class="metric-name">Sparsity</div>
+                            </div>
+                        </div>
+                        <div class="callout warn" style="margin-top:12px">
+                            <strong>The core problem:</strong> 99% of cells are empty. Users only interact with a tiny
+                            fraction of songs. How do you predict the missing values? → <strong>Matrix
+                                Factorization</strong> (next step).
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 3: MATRIX FACTORIZATION ════════════════════════════════════════ -->
+            <div class="step-container" data-step="3">
+                <div class="step-header">
+                    <span class="step-tag">Step 03 — Collaborative Filtering</span>
+                    <h1 class="step-title">Matrix Factorization</h1>
+                    <p class="step-desc">Break the giant matrix into two smaller ones. Each user and song becomes a
+                        vector in "taste space." Adjust the embedding dimension to see the tradeoff.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>Core idea:</strong> Instead of storing the full R matrix (600M × 100M), find matrices
+                    <code>U</code> (600M × k) and <code>I</code> (k × 100M) where <code>R ≈ U × I</code>. The value of
+                    <code>k</code> (latent dimensions) controls accuracy vs. cost.
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">Adjust Embedding Dimension (k)</div>
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span class="slider-name">Latent Dimensions (k)</span>
+                            <span class="slider-value" id="k-value">32</span>
+                        </div>
+                        <input type="range" id="k-slider" min="2" max="256" value="32" step="2">
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric-box">
+                            <div class="metric-val" id="mf-params">—</div>
+                            <div class="metric-name">Parameters</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-val" id="mf-compression">—</div>
+                            <div class="metric-name">Compression Ratio</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-val" id="mf-accuracy">—</div>
+                            <div class="metric-name">Est. Accuracy</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-val amber" id="mf-traintime">—</div>
+                            <div class="metric-name">Train Time</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-label">User Embeddings (U) — 5 users × k dims</div>
+                        <div id="user-embeddings"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-label">Item Embeddings (I) — 8 songs × k dims</div>
+                        <div id="item-embeddings"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">Predicted Scores — Dot product of U[i] · I[j]</div>
+                    <div class="callout info" style="margin-bottom:12px">
+                        Dashed amber cells = <strong>predicted scores</strong> for songs the user hasn't heard. These
+                        predictions power recommendations. Click a user row to see their top recommendations.
+                    </div>
+                    <div class="matrix-wrapper">
+                        <table class="i-matrix" id="predictedMatrix"></table>
+                    </div>
+                    <div id="mf-recommendations" style="margin-top:16px;"></div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 4: EMBEDDING SPACE ════════════════════════════════════════ -->
+            <div class="step-container" data-step="4">
+                <div class="step-header">
+                    <span class="step-tag">Step 04 — Embedding Space</span>
+                    <h1 class="step-title">Taste Space Visualized</h1>
+                    <p class="step-desc">Users and songs as points in 2D space. Similar items cluster together. Drag the
+                        user point to see which songs are nearest — those become recommendations.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>In reality:</strong> This space has 128-512 dimensions. We project to 2D for visualization.
+                    The dot product between a user vector and song vector predicts how much they'll like it. Closer =
+                    better match.
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">2D Embedding Space — Drag the green USER dot</div>
+                    <div class="embed-canvas-wrap">
+                        <canvas id="embedCanvas" width="700" height="420"></canvas>
+                    </div>
+                    <div id="embed-nearest" style="margin-top:16px;"></div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 5: AUDIO ANALYSIS ════════════════════════════════════════ -->
+            <div class="step-container" data-step="5">
+                <div class="step-header">
+                    <span class="step-tag">Step 05 — Audio Analysis</span>
+                    <h1 class="step-title">Every Song Is a Vector</h1>
+                    <p class="step-desc">Adjust the audio feature sliders to define a "target sound." Watch which songs
+                        from the catalog match closest based on audio similarity.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>Pipeline:</strong> Raw audio → 44,100 samples/sec → STFT → Mel Spectrogram → CNN → 128-dim
+                    embedding. The sliders below control high-level features derived from this embedding.
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-label">Your Target Sound — Adjust Features</div>
+                        <div id="audio-sliders"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-label">Closest Songs by Audio Similarity</div>
+                        <div class="song-list" id="audio-matches"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">Song Catalog — Audio Feature Profiles</div>
+                    <div id="audio-catalog"></div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 6: NLP ════════════════════════════════════════ -->
+            <div class="step-container" data-step="6">
+                <div class="step-header">
+                    <span class="step-tag">Step 06 — NLP Pipeline</span>
+                    <h1 class="step-title">Reading the Internet</h1>
+                    <p class="step-desc">Type descriptive words and watch the system find songs that match the "vibe" —
+                        powered by text embeddings from blogs, Reddit, playlist titles.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>How it works:</strong> Spotify crawls music blogs, Reddit, playlist titles. Words like
+                    "melancholic, rainy, introspective" cluster near certain artists. Type a mood/vibe description and
+                    see which songs match.
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">Describe a Vibe</div>
+                    <div class="toggle-group" id="nlp-tags"></div>
+                    <div style="margin-top:12px;">
+                        <input type="text" id="nlp-input" placeholder="Type: chill, workout, rainy day, aggressive..."
+                            style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;">
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">NLP-Matched Songs</div>
+                    <div class="song-list" id="nlp-results"></div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 7: FUSION ════════════════════════════════════════ -->
+            <div class="step-container" data-step="7">
+                <div class="step-header">
+                    <span class="step-tag">Step 07 — The Fusion Layer</span>
+                    <h1 class="step-title">Combining Three Signals</h1>
+                    <p class="step-desc">Adjust the weight of each pillar. Watch how the final recommendation list
+                        changes in real-time. This is the core of Spotify's recommendation engine.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>Formula:</strong> <code>Score = λ₁ × Collab + λ₂ × Audio + λ₃ × NLP</code>. Each pillar
+                    covers the weaknesses of the others. Collaborative filtering fails for new songs; audio analysis
+                    doesn't understand culture; NLP requires internet discussion to exist.
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-label">Pillar Weights — Adjust in Real-Time</div>
+                        <div class="slider-group">
+                            <div class="slider-label"><span class="slider-name">👥 Collaborative Filtering
+                                    (λ₁)</span><span class="slider-value" id="w-collab-val">0.50</span></div>
+                            <input type="range" id="w-collab" min="0" max="100" value="50">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label"><span class="slider-name">🔊 Audio Similarity (λ₂)</span><span
+                                    class="slider-value" id="w-audio-val">0.30</span></div>
+                            <input type="range" id="w-audio" min="0" max="100" value="30">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-label"><span class="slider-name">📡 NLP / Cultural (λ₃)</span><span
+                                    class="slider-value" id="w-nlp-val">0.20</span></div>
+                            <input type="range" id="w-nlp" min="0" max="100" value="20">
+                        </div>
+                        <div class="metric-row" style="margin-top:16px;">
+                            <div class="metric-box">
+                                <div class="metric-val" id="w-total">1.00</div>
+                                <div class="metric-name">Total Weight</div>
+                            </div>
+                        </div>
+
+                        <div class="slider-group" style="margin-top:16px;">
+                            <div class="slider-label"><span class="slider-name">🎯 Diversity (MMR λ)</span><span
+                                    class="slider-value" id="w-diversity-val">0.70</span></div>
+                            <input type="range" id="w-diversity" min="0" max="100" value="70">
+                        </div>
+                        <div class="callout warn" style="margin-top:8px;">
+                            Low diversity → repetitive but safe. High diversity → surprising but risky. Spotify tunes
+                            this per feature (Discover Weekly is more diverse than Daily Mix).
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-label">Fused Recommendations — Top 10</div>
+                        <div class="song-list" id="fusion-results"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 8: SKIP SIMULATOR ════════════════════════════════════════ -->
+            <div class="step-container" data-step="8">
+                <div class="step-header">
+                    <span class="step-tag">Step 08 — The Engagement Engine</span>
+                    <h1 class="step-title">Skip, Play, or Save?</h1>
+                    <p class="step-desc">Simulate a listening session. Play songs, skip them, or save them. Watch how
+                        each action generates events and shifts the algorithm's model of your taste.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>The 30-second rule:</strong> A stream counts only after 30 seconds. Skips before 30s are
+                    strong negative signals. Watch the event log and taste profile update in real-time.
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-label">Now Playing — Use Controls Below</div>
+                        <div class="skip-sim" id="skip-sim">
+                            <div class="now-playing">
+                                <div class="song-title" id="sim-song-title">—</div>
+                                <div class="song-artist" id="sim-song-artist">—</div>
+                                <div class="playback-bar">
+                                    <div class="playback-fill" id="sim-playback"></div>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                                    <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);"
+                                        id="sim-time">0:00</span>
+                                    <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);"
+                                        id="sim-duration">3:30</span>
+                                </div>
+                            </div>
+                            <div class="skip-buttons">
+                                <button class="skip-btn" id="sim-skip" title="Skip">⏭</button>
+                                <button class="skip-btn" id="sim-play" title="Play/Pause">▶</button>
+                                <button class="skip-btn" id="sim-save" title="Save to Library">♥</button>
+                            </div>
+                        </div>
+                        <div style="margin-top:16px;">
+                            <div class="panel-label">Event Log</div>
+                            <div class="event-log" id="sim-log"></div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-label">Your Taste Profile (Live)</div>
+                        <div id="sim-taste-profile"></div>
+                        <div style="margin-top:16px;">
+                            <div class="panel-label">Session Stats</div>
+                            <div class="metric-row">
+                                <div class="metric-box">
+                                    <div class="metric-val" id="sim-played">0</div>
+                                    <div class="metric-name">Played</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-val red" id="sim-skipped">0</div>
+                                    <div class="metric-name">Skipped</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-val amber" id="sim-saved">0</div>
+                                    <div class="metric-name">Saved</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-val" id="sim-skip-rate">0%</div>
+                                    <div class="metric-name">Skip Rate</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 9: COLD START ════════════════════════════════════════ -->
+            <div class="step-container" data-step="9">
+                <div class="step-header">
+                    <span class="step-tag">Step 09 — Cold Start Problem</span>
+                    <h1 class="step-title">New User, Zero Data</h1>
+                    <p class="step-desc">Simulate the cold start: pick 3 artists during "onboarding." Watch the system
+                        bootstrap a taste profile and start making recommendations from almost nothing.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>Three variants:</strong> New User (no history), New Song (no listeners), New System (no data
+                    at all). This demo simulates a new user onboarding. Audio analysis solves new-song cold start since
+                    it only needs the audio file.
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">Onboarding — Select 3+ Artists You Like</div>
+                    <div class="toggle-group" id="coldstart-artists" style="flex-wrap:wrap;"></div>
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-label">Bootstrapped Taste Profile</div>
+                        <div id="coldstart-profile"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-label">Cold-Start Recommendations</div>
+                        <div class="song-list" id="coldstart-recs"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ════════════════════════════════════════ STEP 10: A/B TESTING ════════════════════════════════════════ -->
+            <div class="step-container" data-step="10">
+                <div class="step-header">
+                    <span class="step-tag">Step 10 — A/B Testing</span>
+                    <h1 class="step-title">How Spotify Improves Itself</h1>
+                    <p class="step-desc">Run a simulated A/B test. Adjust the exploration rate and see short-term vs.
+                        long-term metric tradeoffs — the core tension of recommendation optimization.</p>
+                </div>
+
+                <div class="callout info">
+                    <strong>The dilemma:</strong> More exploration = lower short-term engagement (users skip unfamiliar
+                    songs) but higher long-term retention (users discover music they love and stay). Spotify runs
+                    hundreds of these experiments simultaneously.
+                </div>
+
+                <div class="panel">
+                    <div class="panel-label">Experiment Parameters</div>
+                    <div class="slider-group">
+                        <div class="slider-label"><span class="slider-name">Exploration Rate (%)</span><span
+                                class="slider-value" id="ab-explore-val">10</span></div>
+                        <input type="range" id="ab-explore" min="0" max="50" value="10">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label"><span class="slider-name">Test Duration (weeks)</span><span
+                                class="slider-value" id="ab-weeks-val">4</span></div>
+                        <input type="range" id="ab-weeks" min="1" max="12" value="4">
+                    </div>
+                    <button class="btn btn-primary" id="ab-run" style="margin-top:8px;">▶ Run Experiment</button>
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-label">Control Group (Current Algorithm)</div>
+                        <div class="metric-row">
+                            <div class="metric-box">
+                                <div class="metric-val" id="ab-ctrl-session">—</div>
+                                <div class="metric-name">Avg Session (min)</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-val" id="ab-ctrl-skip">—</div>
+                                <div class="metric-name">Skip Rate</div>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-box">
+                                <div class="metric-val" id="ab-ctrl-retention">—</div>
+                                <div class="metric-name">30-day Retention</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-val" id="ab-ctrl-saves">—</div>
+                                <div class="metric-name">Saves / Week</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-label">Treatment Group (More Exploration)</div>
+                        <div class="metric-row">
+                            <div class="metric-box">
+                                <div class="metric-val" id="ab-treat-session">—</div>
+                                <div class="metric-name">Avg Session (min)</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-val" id="ab-treat-skip">—</div>
+                                <div class="metric-name">Skip Rate</div>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-box">
+                                <div class="metric-val" id="ab-treat-retention">—</div>
+                                <div class="metric-name">30-day Retention</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-val" id="ab-treat-saves">—</div>
+                                <div class="metric-name">Saves / Week</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" id="ab-verdict" style="display:none;">
+                    <div class="panel-label">Verdict</div>
+                    <div id="ab-verdict-text"></div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ═══ BOTTOM NAV ═══ -->
+        <footer class="bottom-nav">
+            <button class="btn" id="btn-prev" disabled>← Prev</button>
+            <div class="step-dots" id="step-dots"></div>
+            <button class="btn btn-primary" id="btn-next">Next →</button>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
