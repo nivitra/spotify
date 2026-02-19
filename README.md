@@ -103,6 +103,6 @@ Spotify/
 ---
 
 <p align="center">
-  <strong>LearnApart</strong> · Project Vishwakarma v6.0<br>
+  <strong>LearnApart</strong> · Project Vishwakarma v1.0<br>
   <em>Built to understand, not to impress.</em>
 </p>
